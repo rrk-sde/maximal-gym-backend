@@ -3,19 +3,30 @@ const dotenv = require('dotenv');
 const User = require('./models/User');
 const Coach = require('./models/Coach');
 const FAQ = require('./models/FAQ');
+const Tenant = require('./models/Tenant');
 
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/maximal-gym';
 
 // Sample data
+// Note: tenantId will be added to admin user during seeding
 const users = [
+    {
+        name: 'Super Administrator',
+        email: 'superadmin@maximalgym.com',
+        password: 'superadmin123',
+        role: 'superadmin',
+        phone: '+91 9999999999'
+        // No tenantId for superadmin
+    },
     {
         name: 'Admin User',
         email: 'admin@maximalgym.com',
         password: 'admin123',
         role: 'admin',
         phone: '+91 9876543210'
+        // tenantId will be added during seed process
     }
 ];
 
@@ -128,23 +139,70 @@ const seedDatabase = async () => {
         await User.deleteMany({});
         await Coach.deleteMany({});
         await FAQ.deleteMany({});
+        await Tenant.deleteMany({});
         console.log('🗑️  Cleared existing data');
 
-        // Insert new data
-        await User.create(users);
+        // Step 1: Create default tenant
+        const tenant = await Tenant.create({
+            name: 'Maximal Gym',
+            slug: 'maximal-gym',
+            email: 'admin@maximalgym.com',
+            phone: '+91 9876543210',
+            address: {
+                city: 'Mumbai',
+                state: 'Maharashtra',
+                country: 'India'
+            },
+            subscription: {
+                plan: 'premium',
+                status: 'active'
+            },
+            isActive: true
+        });
+        console.log('🏢 Default tenant created');
+
+        // Step 2: Create users
+        const [superadmin, admin] = users;
+
+        // Create superadmin (no tenantId)
+        await User.create(superadmin);
+        console.log('👤 Superadmin created');
+
+        // Create admin with tenantId
+        await User.create({ ...admin, tenantId: tenant._id });
         console.log('👤 Admin user created');
 
-        await Coach.create(coaches);
+        // Step 3: Add tenantId to coaches and create them
+        const coachesWithTenant = coaches.map(coach => ({
+            ...coach,
+            tenantId: tenant._id
+        }));
+        await Coach.create(coachesWithTenant);
         console.log('👨‍🏫 Coaches created');
 
-        await FAQ.create(faqs);
+        // Step 4: Add tenantId to FAQs and create them
+        const faqsWithTenant = faqs.map(faq => ({
+            ...faq,
+            tenantId: tenant._id
+        }));
+        await FAQ.create(faqsWithTenant);
         console.log('❓ FAQs created');
 
         console.log('\n✅ Database seeded successfully!');
-        console.log('\n📝 Default Admin Credentials:');
+        console.log('\n� Tenant Information:');
+        console.log(`   Tenant ID: ${tenant._id}`);
+        console.log(`   Name: ${tenant.name}`);
+        console.log(`   Slug: ${tenant.slug}`);
+        console.log('\n📝 Superadmin Credentials:');
+        console.log('   Email: superadmin@maximalgym.com');
+        console.log('   Password: superadmin123');
+        console.log('   Role: superadmin');
+        console.log('\n📝 Admin Credentials:');
         console.log('   Email: admin@maximalgym.com');
         console.log('   Password: admin123');
-        console.log('\n⚠️  Please change the admin password after first login!\n');
+        console.log('   Role: admin');
+        console.log(`   TenantId: ${tenant._id}`);
+        console.log('\n⚠️  Please change passwords after first login!\n');
 
         process.exit(0);
     } catch (error) {

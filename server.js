@@ -12,6 +12,7 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const coachRoutes = require('./routes/coachRoutes');
 const faqRoutes = require('./routes/faqRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+const tenantRoutes = require('./routes/tenantRoutes');
 
 // Swagger
 const swaggerUi = require('swagger-ui-express');
@@ -25,15 +26,22 @@ app.use(cors()); // Allow all origins for development
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Tenant middleware (must be after auth)
+const tenantMiddleware = require('./middleware/tenantMiddleware');
+
 // Swagger Documentation Route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api/auth', authRoutes);
+
+// Apply tenant middleware to tenant-specific routes
+app.use(tenantMiddleware);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/coaches', coachRoutes);
 app.use('/api/faqs', faqRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/tenants', tenantRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

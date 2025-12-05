@@ -17,6 +17,12 @@ const bookingSchema = new mongoose.Schema(
                 'Please provide a valid email'
             ]
         },
+        tenantId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Tenant',
+            required: true,
+            index: true
+        },
         phone: {
             type: String,
             required: [true, 'Please provide your phone number'],
@@ -61,7 +67,7 @@ const bookingSchema = new mongoose.Schema(
 );
 
 // Index for faster queries
-bookingSchema.index({ email: 1, date: 1 });
-bookingSchema.index({ coach: 1, date: 1, time: 1 }, { unique: true });
+bookingSchema.index({ tenantId: 1, email: 1, date: 1 });
+bookingSchema.index({ tenantId: 1, coach: 1, date: 1, time: 1 }, { unique: true });
 
 module.exports = mongoose.model('Booking', bookingSchema);

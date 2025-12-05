@@ -28,8 +28,16 @@ const userSchema = new mongoose.Schema(
         },
         role: {
             type: String,
-            enum: ['user', 'admin'],
+            enum: ['user', 'admin', 'superadmin'],
             default: 'user'
+        },
+        tenantId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Tenant',
+            required: function () {
+                return this.role !== 'superadmin';
+            },
+            index: true
         },
         phone: {
             type: String,

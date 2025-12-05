@@ -13,6 +13,12 @@ const coachSchema = new mongoose.Schema(
             unique: true,
             lowercase: true
         },
+        tenantId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Tenant',
+            required: true,
+            index: true
+        },
         specialty: {
             type: String,
             required: [true, 'Please provide specialty'],
