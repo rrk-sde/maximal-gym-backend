@@ -7,13 +7,16 @@ exports.createContact = async (req, res) => {
     try {
         const { name, email, phone, subject, message } = req.body;
 
-        const contact = await Contact.create({
+        const contactData = {
             name,
             email,
             phone,
             subject,
-            message
-        });
+            message,
+            tenantId: req.tenantId || req.body.tenantId
+        };
+
+        const contact = await Contact.create(contactData);
 
         res.status(201).json({
             status: 'success',
@@ -38,6 +41,11 @@ exports.getAllContacts = async (req, res) => {
         const query = {};
         if (status) query.status = status;
         if (priority) query.priority = priority;
+
+        // Filter by tenantId if present (from middleware)
+        if (req.tenantId) {
+            query.tenantId = req.tenantId;
+        }
 
         const contacts = await Contact.find(query)
             .sort({ createdAt: -1 })

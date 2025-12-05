@@ -7,13 +7,18 @@ exports.createBooking = async (req, res) => {
     try {
         const { name, email, phone, coach, sessionType, date, time, notes } = req.body;
 
-        // Check if slot is already booked
-        const existingBooking = await Booking.findOne({
+        // Check if slot is already booked (within same tenant if tenantId exists)
+        const conflictQuery = {
             coach,
             date: new Date(date),
             time,
             status: { $in: ['pending', 'confirmed'] }
-        });
+        };
+        if (req.tenantId) {
+            conflictQuery.tenantId = req.tenantId;
+        }
+
+        const existingBooking = await Booking.findOne(conflictQuery);
 
         if (existingBooking) {
             return res.status(400).json({
@@ -22,8 +27,8 @@ exports.createBooking = async (req, res) => {
             });
         }
 
-        // Create booking
-        const booking = await Booking.create({
+        // Create booking with tenantId
+        const bookingData = {
             name,
             email,
             phone,
@@ -32,8 +37,11 @@ exports.createBooking = async (req, res) => {
             date,
             time,
             notes,
+            tenantId: req.tenantId || req.body.tenantId,
             ...(req.user && { userId: req.user.id })
-        });
+        };
+
+        const booking = await Booking.create(bookingData);
 
         res.status(201).json({
             status: 'success',
@@ -58,6 +66,11 @@ exports.getAllBookings = async (req, res) => {
         const query = {};
         if (status) query.status = status;
         if (coach) query.coach = coach;
+
+        // Filter by tenantId if present (from middleware)
+        if (req.tenantId) {
+            query.tenantId = req.tenantId;
+        }
 
         const bookings = await Booking.find(query)
             .sort({ date: -1, createdAt: -1 })
