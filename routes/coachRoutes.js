@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, restrictTo } = require('../middleware/auth');
+const tenantMiddleware = require('../middleware/tenantMiddleware');
 const {
     getAllCoaches,
     getCoach,
@@ -10,12 +11,12 @@ const {
 } = require('../controllers/coachController');
 
 // Public routes
-router.get('/', getAllCoaches);
-router.get('/:identifier', getCoach);
+router.get('/', tenantMiddleware, getAllCoaches);
+router.get('/:identifier', tenantMiddleware, getCoach);
 
 // Admin routes
-router.post('/', protect, restrictTo('admin', 'superadmin'), createCoach);
-router.put('/:id', protect, restrictTo('admin', 'superadmin'), updateCoach);
-router.delete('/:id', protect, restrictTo('admin', 'superadmin'), deleteCoach);
+router.post('/', protect, tenantMiddleware, restrictTo('admin', 'superadmin'), createCoach);
+router.put('/:id', protect, tenantMiddleware, restrictTo('admin', 'superadmin'), updateCoach);
+router.delete('/:id', protect, tenantMiddleware, restrictTo('admin', 'superadmin'), deleteCoach);
 
 module.exports = router;

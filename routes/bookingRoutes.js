@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, restrictTo } = require('../middleware/auth');
+const tenantMiddleware = require('../middleware/tenantMiddleware');
 const {
     createBooking,
     getAllBookings,
@@ -15,13 +16,13 @@ const {
 router.post('/', createBooking);
 
 // Protected routes
-router.get('/my-bookings', protect, getMyBookings);
-router.put('/:id/cancel', protect, cancelBooking);
+router.get('/my-bookings', protect, tenantMiddleware, getMyBookings);
+router.put('/:id/cancel', protect, tenantMiddleware, cancelBooking);
 
 // Admin routes
-router.get('/', protect, restrictTo('admin', 'superadmin'), getAllBookings);
-router.get('/:id', protect, restrictTo('admin', 'superadmin'), getBookingById);
-router.put('/:id/status', protect, restrictTo('admin', 'superadmin'), updateBookingStatus);
-router.delete('/:id', protect, restrictTo('admin', 'superadmin'), deleteBooking);
+router.get('/', protect, tenantMiddleware, restrictTo('admin', 'superadmin'), getAllBookings);
+router.get('/:id', protect, tenantMiddleware, restrictTo('admin', 'superadmin'), getBookingById);
+router.put('/:id/status', protect, tenantMiddleware, restrictTo('admin', 'superadmin'), updateBookingStatus);
+router.delete('/:id', protect, tenantMiddleware, restrictTo('admin', 'superadmin'), deleteBooking);
 
 module.exports = router;

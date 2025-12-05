@@ -36,7 +36,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/auth', authRoutes);
 
 // Apply tenant middleware to tenant-specific routes
-app.use(tenantMiddleware);
+// Apply tenant middleware to tenant-specific routes
+// Note: tenantMiddleware is now applied inside individual routes after auth
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/coaches', coachRoutes);
 app.use('/api/faqs', faqRoutes);
