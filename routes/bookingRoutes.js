@@ -19,9 +19,9 @@ router.get('/my-bookings', protect, getMyBookings);
 router.put('/:id/cancel', protect, cancelBooking);
 
 // Admin routes
-router.get('/', protect, restrictTo('admin'), getAllBookings);
-router.get('/:id', protect, restrictTo('admin'), getBookingById);
-router.put('/:id/status', protect, restrictTo('admin'), updateBookingStatus);
-router.delete('/:id', protect, restrictTo('admin'), deleteBooking);
+router.get('/', protect, restrictTo('admin', 'superadmin'), getAllBookings);
+router.get('/:id', protect, restrictTo('admin', 'superadmin'), getBookingById);
+router.put('/:id/status', protect, restrictTo('admin', 'superadmin'), updateBookingStatus);
+router.delete('/:id', protect, restrictTo('admin', 'superadmin'), deleteBooking);
 
 module.exports = router;

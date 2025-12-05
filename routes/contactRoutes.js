@@ -13,9 +13,9 @@ const {
 router.post('/', createContact);
 
 // Admin routes
-router.get('/', protect, restrictTo('admin'), getAllContacts);
-router.get('/:id', protect, restrictTo('admin'), getContactById);
-router.put('/:id', protect, restrictTo('admin'), updateContact);
-router.delete('/:id', protect, restrictTo('admin'), deleteContact);
+router.get('/', protect, restrictTo('admin', 'superadmin'), getAllContacts);
+router.get('/:id', protect, restrictTo('admin', 'superadmin'), getContactById);
+router.put('/:id', protect, restrictTo('admin', 'superadmin'), updateContact);
+router.delete('/:id', protect, restrictTo('admin', 'superadmin'), deleteContact);
 
 module.exports = router;

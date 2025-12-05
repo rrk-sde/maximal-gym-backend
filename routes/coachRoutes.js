@@ -14,8 +14,8 @@ router.get('/', getAllCoaches);
 router.get('/:identifier', getCoach);
 
 // Admin routes
-router.post('/', protect, restrictTo('admin'), createCoach);
-router.put('/:id', protect, restrictTo('admin'), updateCoach);
-router.delete('/:id', protect, restrictTo('admin'), deleteCoach);
+router.post('/', protect, restrictTo('admin', 'superadmin'), createCoach);
+router.put('/:id', protect, restrictTo('admin', 'superadmin'), updateCoach);
+router.delete('/:id', protect, restrictTo('admin', 'superadmin'), deleteCoach);
 
 module.exports = router;
