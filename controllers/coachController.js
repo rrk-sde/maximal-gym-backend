@@ -6,8 +6,14 @@ const Coach = require('../models/Coach');
 exports.getAllCoaches = async (req, res) => {
     try {
         const { isActive = true } = req.query;
+        const filter = { isActive };
 
-        const coaches = await Coach.find({ isActive }).sort({ name: 1 });
+        // Filter by tenantId if present (from middleware)
+        if (req.tenantId) {
+            filter.tenantId = req.tenantId;
+        }
+
+        const coaches = await Coach.find(filter).sort({ name: 1 });
 
         res.status(200).json({
             status: 'success',
@@ -28,14 +34,21 @@ exports.getCoach = async (req, res) => {
     try {
         const { identifier } = req.params;
 
-        let coach;
+        let filter = {};
         if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
             // Valid ObjectId
-            coach = await Coach.findById(identifier);
+            filter._id = identifier;
         } else {
             // Treat as slug
-            coach = await Coach.findOne({ slug: identifier });
+            filter.slug = identifier;
         }
+
+        // Filter by tenantId if present
+        if (req.tenantId) {
+            filter.tenantId = req.tenantId;
+        }
+
+        const coach = await Coach.findOne(filter);
 
         if (!coach) {
             return res.status(404).json({
@@ -61,7 +74,13 @@ exports.getCoach = async (req, res) => {
 // @access  Private/Admin
 exports.createCoach = async (req, res) => {
     try {
-        const coach = await Coach.create(req.body);
+        // Inject tenantId from middleware
+        const coachData = {
+            ...req.body,
+            tenantId: req.tenantId || req.body.tenantId
+        };
+
+        const coach = await Coach.create(coachData);
 
         res.status(201).json({
             status: 'success',
