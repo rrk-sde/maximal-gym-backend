@@ -17,6 +17,11 @@ const tenantMiddleware = (req, res, next) => {
         }
     }
 
+    // If no tenantId found from user (or public request), check header
+    if (!req.tenantId && req.headers['x-tenant-id']) {
+        req.tenantId = req.headers['x-tenant-id'];
+    }
+
     next();
 };
 

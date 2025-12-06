@@ -13,7 +13,7 @@ const {
 } = require('../controllers/bookingController');
 
 // Public route
-router.post('/', createBooking);
+router.post('/', tenantMiddleware, createBooking);
 
 // Protected routes
 router.get('/my-bookings', protect, tenantMiddleware, getMyBookings);
